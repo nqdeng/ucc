@@ -1,0 +1,16 @@
+{
+	"name": "ucc",
+	"description": "Unicorn Compiler",
+	"keywords": [
+		"unicorn"
+	],
+	"author": "Nanqiao Deng <nqdeng@gmail.com>",
+	"version": "2.0.3",
+	"engines": {
+		"node": "0.10.x"
+	},
+	"main": "lib/compiler.js",
+	"bin" : {
+		"ucc": "./bin/ucc"
+	}
+}

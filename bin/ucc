@@ -1,0 +1,164 @@
+#!/usr/bin/env node
+
+var Compiler = require('../lib/compiler'),
+	Source = require('./source'),
+	Target = require('./target');
+
+var PATTERN_DIRECTORY = /\/$/,
+
+	compiler, source, target, range,
+
+	/**
+	 * Create and configure all instance.
+	 * @param config {Object}
+	 */
+	initiate = function (config) {
+		source = new Source({
+			patch: config.patch,
+			root: config.source
+		});
+
+		target = new Target({
+			root: config.target
+		});
+
+		var options = source.read('unicorn.json');
+
+		if (options === null) {
+			console.error('Cannot find unicorn.json');
+			process.exit(1);
+		}
+
+		try {
+			options = JSON.parse(options.data.toString('utf-8'));
+		} catch (err) {
+			console.error('Syntax error in unicorn.json');
+			process.exit(1);
+		}
+
+		compiler = new Compiler({
+			options: {
+				'modular': {
+					'alias': options.alias,
+					'whitelist': options.modules
+				}
+			},
+			reader: function (pathname, callback) {
+				var file = source.read(pathname);
+
+				if (file === null) {
+					callback(null);
+				} else {
+					callback(file);
+				}
+			},
+			writer: function (file, callback) {
+				if (file.data) {
+					if (!range || range.indexOf(file.pathname) !== -1) {
+						target.write(file);
+					}
+
+					Object.defineProperty(file, 'data', {
+						get: function () {
+							return target.read(this.pathname).data;
+						}
+					});
+				}
+
+				callback();
+			}
+		});
+
+		compiler
+			.mount('.js', [
+				'decode', 'dependency', 'nocomment',
+				'modular', 'stamp', 'minify', 'encode' ])
+			.mount('.css', [
+				'decode', 'dependency', 'minify', 'encode' ])
+			.mount('.json', [
+				'decode', 'json', 'encode' ])
+			.mount('.tpl', [
+				'decode', 'template', 'encode' ]);
+	},
+
+	/**
+	 * Program entrance.
+	 * @param argv {Array}
+	 */
+	main = function (argv) {
+		if (argv.length !== 3) {
+			console.error('Usage: ucc <patch> <source> <target>');
+			process.exit(1);
+		}
+
+		initiate({
+			patch: argv[0] || './patch',
+			source: argv[1] || './source',
+			target: argv[2] || './target'
+		});
+
+		var deps = source.read('.deps'),
+			meta = target.read('.meta'),
+			incremental;
+
+		try {
+			deps = JSON.parse(deps.data.toString('utf-8'));
+		} catch (err) {
+			deps = null;
+		}
+
+		try {
+			meta = JSON.parse(meta.data.toString('utf-8'));
+		} catch (err) {
+			meta = null;
+		}
+
+		if (!(incremental = deps && meta)) {
+			deps = {};
+			meta = {};
+		}
+
+		(incremental ? (range = source.range(deps)) : source.range())
+			.forEach(function (pathname) {
+				compiler.compile(pathname, function (file) {
+					if (/\.(?:js|css)$/.test(pathname)) {
+						meta[pathname] = {
+							dataHash: file.meta.dataHash.toString(16),
+							depsHash: file.meta.depsHash.toString(16),
+							nameHash: file.meta.nameHash.toString(16),
+							requires: file.meta.requires
+						};
+					}
+						
+					deps[pathname] = file.meta.dependencies;
+				});
+			});
+
+		if (incremental && compiler.errors.length > 0) {
+			source.cleanup();
+			target.cleanup();
+
+			console.error(compiler.errors.join('\n'));
+			process.exit(1);
+		} else {
+			source.merge();
+			source.cleanup();
+
+			source.write({
+				pathname: '.deps',
+				data: JSON.stringify(deps)
+			});
+
+			target.write({
+				pathname: '.meta',
+				data: JSON.stringify(meta)
+			});
+
+			target.write({
+				pathname: '.log',
+				data: compiler.errors.join('\n')
+			});
+		}
+	};
+
+main(process.argv.slice(2));
