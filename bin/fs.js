@@ -33,7 +33,7 @@ var PATTERN_BACKSLASH = /\\/g,
 
 		(function next(current) {
 			// Empty child directory first.
-			var result = readDirectory(root, current);
+			var result = readDirectory(root, current, false, true);
 
 			delete result[current];
 
@@ -86,17 +86,18 @@ var PATTERN_BACKSLASH = /\\/g,
 	 * Read a directory.
 	 * @param root {string}
 	 * @param pathname {string}
+	 * @param [recursive] {boolean}
 	 * @param [all] {boolean}
 	 * @return {Object}
 	 */
-	readDirectory = exports.readDirectory = function (root, pathname, recursive) {
+	readDirectory = exports.readDirectory = function (root, pathname, recursive, all) {
 		var result = {};
 
 		result[pathname] = true;
 
 		(function next(current) {
 			fs.readdirSync(path.join(root, current)).forEach(function (pathname) {
-				if (pathname[0] !== '.') { // Ignore hidden file.
+				if (all || pathname[0] !== '.') { // Ignore hidden file.
 					pathname = path.join(current, pathname)
 						.replace(PATTERN_BACKSLASH, '/');
 

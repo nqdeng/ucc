@@ -4,6 +4,10 @@
 	"keywords": [
 		"unicorn"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/nqdeng/ucc.git"
+	},
 	"author": "Nanqiao Deng <nqdeng@gmail.com>",
 	"version": "2.0.3",
 	"engines": {

@@ -6,7 +6,7 @@ var Compiler = require('../lib/compiler'),
 
 var PATTERN_DIRECTORY = /\/$/,
 
-	compiler, source, target, range,
+	compiler, source, target,
 
 	/**
 	 * Create and configure all instance.
@@ -54,9 +54,7 @@ var PATTERN_DIRECTORY = /\/$/,
 			},
 			writer: function (file, callback) {
 				if (file.data) {
-					if (!range || range.indexOf(file.pathname) !== -1) {
-						target.write(file);
-					}
+					target.write(file);
 
 					Object.defineProperty(file, 'data', {
 						get: function () {
@@ -118,19 +116,23 @@ var PATTERN_DIRECTORY = /\/$/,
 			meta = {};
 		}
 
-		(incremental ? (range = source.range(deps)) : source.range())
+		(incremental ? source.range(deps) : source.range())
 			.forEach(function (pathname) {
 				compiler.compile(pathname, function (file) {
-					if (/\.(?:js|css)$/.test(pathname)) {
-						meta[pathname] = {
-							dataHash: file.meta.dataHash.toString(16),
-							depsHash: file.meta.depsHash.toString(16),
-							nameHash: file.meta.nameHash.toString(16),
-							requires: file.meta.requires
-						};
+					if (!file) {
+						compiler.errors.push('Cannot compile file: "' + pathname + '"');
+					} else {
+						if (/\.(?:js|css)$/.test(pathname)) {
+							meta[pathname] = {
+								dataHash: file.meta.dataHash.toString(16),
+								depsHash: file.meta.depsHash.toString(16),
+								nameHash: file.meta.nameHash.toString(16),
+								requires: file.meta.requires
+							};
+						}
+							
+						deps[pathname] = file.meta.dependencies;
 					}
-						
-					deps[pathname] = file.meta.dependencies;
 				});
 			});
 
