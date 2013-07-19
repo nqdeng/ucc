@@ -97,7 +97,7 @@ var PATTERN_DIRECTORY = /\/$/,
 
 		var deps = source.read('.deps'),
 			meta = target.read('.meta'),
-			incremental;
+			incremental, range;
 
 		try {
 			deps = JSON.parse(deps.data.toString('utf-8'));
@@ -115,52 +115,59 @@ var PATTERN_DIRECTORY = /\/$/,
 			deps = {};
 			meta = {};
 		}
+		
+		range = incremental ? source.range(deps) : source.range();
 
-		(incremental ? source.range(deps) : source.range())
-			.forEach(function (pathname) {
-				compiler.compile(pathname, function (file) {
-					if (!file) {
-						compiler.errors.push('Cannot compile file: "' + pathname + '"');
-					} else {
-						if (/\.(?:js|css)$/.test(pathname)) {
-							meta[pathname] = {
-								dataHash: file.meta.dataHash.toString(16),
-								depsHash: file.meta.depsHash.toString(16),
-								nameHash: file.meta.nameHash.toString(16),
-								requires: file.meta.requires
-							};
-						}
-							
-						deps[pathname] = file.meta.dependencies;
+		compiler.compile(range, function (files) {
+			var i = 0,
+				len = range.length,
+				pathname, m;
+				
+			for (; i < len; ++i) {
+				pathname = range[i];
+				if (!files[i]) {
+					compiler.errors.push('Cannot compile file: "' + pathname + '"');
+				} else {
+					m = files[i].meta;
+					if (/\.(?:js|css)$/.test(pathname)) {
+						meta[pathname] = {
+							dataHash: m.dataHash.toString(16),
+							depsHash: m.depsHash.toString(16),
+							nameHash: m.nameHash.toString(16),
+							requires: m.requires
+						};
 					}
+						
+					deps[pathname] = m.dependencies;
+				}
+			}
+			
+			if (incremental && compiler.errors.length > 0) {
+				source.cleanup();
+				target.cleanup();
+
+				console.error(compiler.errors.join('\n'));
+				process.exit(1);
+			} else {
+				source.merge();
+				source.cleanup();
+
+				source.write({
+					pathname: '.deps',
+					data: JSON.stringify(deps)
 				});
-			});
 
-		if (incremental && compiler.errors.length > 0) {
-			source.cleanup();
-			target.cleanup();
+				target.write({
+					pathname: '.meta',
+					data: JSON.stringify(meta)
+				});
 
-			console.error(compiler.errors.join('\n'));
-			process.exit(1);
-		} else {
-			source.merge();
-			source.cleanup();
-
-			source.write({
-				pathname: '.deps',
-				data: JSON.stringify(deps)
-			});
-
-			target.write({
-				pathname: '.meta',
-				data: JSON.stringify(meta)
-			});
-
-			target.write({
-				pathname: '.log',
-				data: compiler.errors.join('\n')
-			});
-		}
+				target.write({
+					pathname: '.log',
+					data: compiler.errors.join('\n')
+				});
+			}
+		});
 	};
 
 main(process.argv.slice(2));
