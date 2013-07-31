@@ -1,4 +1,4 @@
-**U**ni**C**orn**C**ompiler
+UniCornCompiler
 =============================
 
 The static file compiler for Unicorn System.
