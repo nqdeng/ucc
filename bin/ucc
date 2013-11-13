@@ -72,7 +72,7 @@ var PATTERN_DIRECTORY = /\/$/,
 				'decode', 'dependency', 'nocomment',
 				'modular', 'stamp', 'minify', 'encode' ])
 			.mount('.css', [
-				'decode', 'dependency', 'minify', 'encode' ])
+				'decode', 'dependency', 'stamp', 'minify', 'encode' ])
 			.mount('.json', [
 				'decode', 'json', 'encode' ])
 			.mount('.tpl', [
@@ -129,7 +129,7 @@ var PATTERN_DIRECTORY = /\/$/,
 					compiler.errors.push('Cannot compile file: "' + pathname + '"');
 				} else {
 					m = files[i].meta;
-					if (/\.(?:js|css)$/.test(pathname)) {
+					if (/\.(?:js|css|png|jpeg|jpg|gif)$/.test(pathname)) {
 						meta[pathname] = {
 							dataHash: m.dataHash.toString(16),
 							depsHash: m.depsHash.toString(16),
