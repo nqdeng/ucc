@@ -13,6 +13,7 @@ var PATTERN_DIRECTORY = /\/$/,
 	 * @param config {Object}
 	 */
 	initiate = function (config) {
+
 		source = new Source({
 			patch: config.patch,
 			root: config.source
@@ -22,7 +23,7 @@ var PATTERN_DIRECTORY = /\/$/,
 			root: config.target
 		});
 
-		var options = source.read('unicorn.json');
+		var options = source.read('unicorn.json'),uconfig;
 
 		if (options === null) {
 			console.error('Cannot find unicorn.json');
@@ -35,6 +36,19 @@ var PATTERN_DIRECTORY = /\/$/,
 			console.error('Syntax error in unicorn.json');
 			process.exit(1);
 		}
+
+		try{
+        	uconfig = JSON.parse(uconfig.data.toString('utf-8'));
+        } catch (err) {
+        	uconfig = null;
+        }
+
+
+        if (uconfig){
+        	mtime = uconfig.mtime;
+        } else {
+        	mtime = new Date().getTime();
+        }
 
 		compiler = new Compiler({
 			options: {
@@ -64,7 +78,8 @@ var PATTERN_DIRECTORY = /\/$/,
 				}
 
 				callback();
-			}
+			},
+			mtime: mtime
 		});
 
 		compiler
@@ -134,7 +149,8 @@ var PATTERN_DIRECTORY = /\/$/,
 							dataHash: m.dataHash.toString(16),
 							depsHash: m.depsHash.toString(16),
 							nameHash: m.nameHash.toString(16),
-							requires: m.requires
+							requires: m.requires,
+							mtime: m.mtime
 						};
 					}
 						
