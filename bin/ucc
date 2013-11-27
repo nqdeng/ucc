@@ -23,7 +23,9 @@ var PATTERN_DIRECTORY = /\/$/,
 			root: config.target
 		});
 
-		var options = source.read('unicorn.json'),uconfig;
+		var options = source.read('unicorn.json'),
+			uconfig = source.read('uconfig.json'),
+			mtime;
 
 		if (options === null) {
 			console.error('Cannot find unicorn.json');
@@ -37,17 +39,17 @@ var PATTERN_DIRECTORY = /\/$/,
 			process.exit(1);
 		}
 
-		try{
+		try {
         	uconfig = JSON.parse(uconfig.data.toString('utf-8'));
         } catch (err) {
         	uconfig = null;
         }
 
 
-        if (uconfig){
+        if (uconfig) {
         	mtime = uconfig.mtime;
         } else {
-        	mtime = new Date().getTime();
+        	mtime = Date.now();
         }
 
 		compiler = new Compiler({
