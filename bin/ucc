@@ -1,191 +1,33 @@
 #!/usr/bin/env node
 
-var Compiler = require('../lib/compiler'),
+var path = require('path'),
+	ucc = require('../lib/'),
 	Source = require('./source'),
 	Target = require('./target');
 
-var PATTERN_DIRECTORY = /\/$/,
-
-	compiler, source, target,
-
-	/**
-	 * Create and configure all instance.
-	 * @param config {Object}
-	 */
-	initiate = function (config) {
-
-		source = new Source({
-			patch: config.patch,
-			root: config.source
-		});
-
-		target = new Target({
-			root: config.target
-		});
-
-		var options = source.read('unicorn.json'),
-			uconfig = source.read('uconfig.json'),
-			mtime;
-
-		if (options === null) {
-			console.error('Cannot find unicorn.json');
-			process.exit(1);
-		}
-
-		try {
-			options = JSON.parse(options.data.toString('utf-8'));
-		} catch (err) {
-			console.error('Syntax error in unicorn.json');
-			process.exit(1);
-		}
-
-		try {
-        	uconfig = JSON.parse(uconfig.data.toString('utf-8'));
-        } catch (err) {
-        	uconfig = null;
-        }
-
-
-        if (uconfig) {
-        	mtime = uconfig.mtime;
-        } else {
-        	mtime = Date.now();
-        }
-
-		compiler = new Compiler({
-			options: {
-				'modular': {
-					'alias': options.alias,
-					'whitelist': options.modules
-				}
-			},
-			reader: function (pathname, callback) {
-				var file = source.read(pathname);
-
-				if (file === null) {
-					callback(null);
-				} else {
-					callback(file);
-				}
-			},
-			writer: function (file, callback) {
-				if (file.data) {
-					target.write(file);
-
-					Object.defineProperty(file, 'data', {
-						get: function () {
-							return target.read(this.pathname).data;
-						}
-					});
-				}
-
-				callback();
-			},
-			mtime: mtime
-		});
-
-		compiler
-			.mount('.js', [
-				'decode', 'dependency', 'nocomment',
-				'modular', 'stamp', 'minify', 'encode' ])
-			.mount('.css', [
-				'decode', 'dependency', 'stamp', 'minify', 'encode' ])
-			.mount('.json', [
-				'decode', 'json', 'encode' ])
-			.mount('.tpl', [
-				'decode', 'template', 'encode' ]);
-	},
-
-	/**
-	 * Program entrance.
-	 * @param argv {Array}
-	 */
-	main = function (argv) {
-		if (argv.length !== 3) {
-			console.error('Usage: ucc <patch> <source> <target>');
-			process.exit(1);
-		}
-
-		initiate({
-			patch: argv[0] || './patch',
-			source: argv[1] || './source',
-			target: argv[2] || './target'
-		});
-
-		var deps = source.read('.deps'),
-			meta = target.read('.meta'),
-			incremental, range;
-
-		try {
-			deps = JSON.parse(deps.data.toString('utf-8'));
-		} catch (err) {
-			deps = null;
-		}
-
-		try {
-			meta = JSON.parse(meta.data.toString('utf-8'));
-		} catch (err) {
-			meta = null;
-		}
-
-		if (!(incremental = deps && meta)) {
-			deps = {};
-			meta = {};
-		}
+function main(argv) {
+	var pkg = require(path.resolve('package.json')),
+		source = pkg.source || 'src',
+		target = pkg.target || 'build',
 		
-		range = incremental ? source.range(deps) : source.range();
-
-		compiler.compile(range, function (files) {
-			var i = 0,
-				len = range.length,
-				pathname, m;
-				
-			for (; i < len; ++i) {
-				pathname = range[i];
-				if (!files[i]) {
-					compiler.errors.push('Cannot compile file: "' + pathname + '"');
-				} else {
-					m = files[i].meta;
-					if (/\.(?:js|css|png|jpeg|jpg|gif)$/.test(pathname)) {
-						meta[pathname] = {
-							dataHash: m.dataHash.toString(16),
-							depsHash: m.depsHash.toString(16),
-							nameHash: m.nameHash.toString(16),
-							requires: m.requires,
-							mtime: m.mtime
-						};
-					}
-						
-					deps[pathname] = m.dependencies;
-				}
+		prefix = (pkg.name || '') + '/' + (pkg.version || ''),
+		
+		compiler = ucc({
+			modular: {
+				alias: pkg.alias || {}
 			}
-			
-			if (incremental && compiler.errors.length > 0) {
-				source.cleanup();
-				target.cleanup();
+		}),
+	
+	source = new Source(source);
+	
+	target = new Target(target);
 
-				console.error(compiler.errors.join('\n'));
-				process.exit(1);
-			} else {
-				source.merge();
-				source.cleanup();
+	source.travel(function (pathname, data) {
+		var id = path.join(prefix, pathname).replace(/\\/g, '/');
 
-				source.write({
-					pathname: '.deps',
-					data: JSON.stringify(deps)
-				});
-
-				target.write({
-					pathname: '.meta',
-					data: JSON.stringify(meta)
-				});
-
-				target.write({
-					pathname: '.log',
-					data: compiler.errors.join('\n')
-				});
-			}
-		});
-	};
+		data = compiler.compile(id, data);
+		target.write(pathname, data);
+	});
+}
 
 main(process.argv.slice(2));

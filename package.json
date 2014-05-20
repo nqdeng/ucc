@@ -9,11 +9,11 @@
 		"url": "git://github.com/nqdeng/ucc.git"
 	},
 	"author": "Nanqiao Deng <nqdeng@gmail.com>",
-	"version": "2.0.7",
+	"version": "3.0.0",
 	"engines": {
 		"node": "0.10.x"
 	},
-	"main": "lib/compiler.js",
+	"main": "lib/index.js",
 	"bin" : {
 		"ucc": "./bin/ucc"
 	}
