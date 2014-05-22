@@ -25,7 +25,7 @@ function main(argv) {
 	source.travel(function (pathname, data) {
 		var id = path.join(prefix, pathname).replace(/\\/g, '/');
 
-		data = compiler.compile(id, data);
+		data = compiler.compile(id, data).data;
 		target.write(pathname, data);
 	});
 }
