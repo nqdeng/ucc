@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Unicorn Compiler</title>
+<link href="style.css" rel="stylesheet" media="all" type="text/css"/>
+<script>
+    (function (tags) {
+        var i = 0, len = tags.length;
+
+        for (; i < len; ++i) {
+            document.createElement(tags[i]);
+        }
+    }([ 'header', 'nav', 'article', 'footer' ]));
+</script>
+</head>
+<body>
+<div id="wrapper">
+    <div id="menu">
+        <span class="first"></span>
+        <span></span>
+        <span></span>
+    </div>
+    <nav>
+        <ul>
+<li class="level2"><a href="#1">Install</a></li><li class="level2"><a href="#2">Usage</a></li><li class="level3"><a href="#2.1">Command</a></li><li class="level3"><a href="#2.2">Grunt Adapter</a></li><li class="level3"><a href="#2.3">Glup Adapter</a></li><li class="level2"><a href="#3">API</a></li><li class="level3"><a href="#3.1"><code>compile(pathname, data)</code></a></li><li class="level3"><a href="#3.2"><code>mount(extname, pipeline)</code></a></li></ul>
+
+    </nav>
+    <article>
+    <header>
+        <div class="link">
+            <a href="https://github.com/nqdeng/ucc">Fork me on GitHub</a>
+        </div>
+        <h1>
+            UCC<sup>3.0.0</sup>
+        </h1>
+        <div class="comment">
+            The static file compiler for Unicorn System.
+        </div>
+    </header>
+
+    <h1 id="unicorncompiler">UniCornCompiler</h1>
+<p>The static file compiler for Unicorn System.</p>
+<h2 id="1">Install</h2>
+<pre><code>npm install ucc -g</code></pre>
+<h2 id="2">Usage</h2>
+<h3 id="2.1">Command</h3>
+<pre><code>ucc</code></pre>
+<p>命令模式下，ucc唯一依赖文件目录下面的package.json文件，该文件的结构如下：</p>
+<pre><code>{
+    src:&#39;src&#39;, // 指定源文件目录
+    target:&#39;build&#39;, // 指定build后的文件目录
+    name:&#39;biz/home&#39;, // 指定当前编译的名称
+    version:&#39;1.0.0&#39;, // 指定当前编译的版本
+    alias:{  // CMD 模块的映射
+
+    }
+}</code></pre>
+<h3 id="2.2">Grunt Adapter</h3>
+<p><a href="http://github.com/windygex/grunt-ucc">Click Here</a></p>
+<h3 id="2.3">Glup Adapter</h3>
+<p><a href="http://github.com/windygex/gulp-ucc">Click Here</a></p>
+<h2 id="3">API</h2>
+<pre><code>var ucc = require(&#39;ucc&#39;),
+    compiler = ucc({
+        modular:{
+            alias:{}
+        }
+    }),
+    data = new Buffer(&#39;define({name:&quot;test.js&quot;})&#39;),
+    pathname = &#39;test.js&#39;;
+
+var file = compiler.compile(pathname,data);
+
+console.log(file.pathname,file.data);</code></pre>
+<h3 id="3.1"><code>compile(pathname, data)</code></h3>
+<pre><code>* pathname {String} 文件路径
+* data {String | Buffer} 文件数据</code></pre>
+<p>根据提供的路径和内容编译文件，返回一个文件对象。</p>
+<h3 id="3.2"><code>mount(extname, pipeline)</code></h3>
+<pre><code>* extname {String} 文件扩展名
+* pipeline {Function | String} 文件处理方法</code></pre>
+<p>根据扩展名挂载不同的处理函数</p>
+<pre><code>var ucc = require(&#39;ucc&#39;),
+    compiler = ucc({
+        modular:{
+            alias:{}
+        }
+    });
+
+compiler.mount(&#39;.tpl&#39;,[&#39;decode&#39;,&#39;template&#39;,&#39;encode&#39;])</code></pre>
+
+    </article>
+    <script>
+    (function () {
+        var wrapper = document.getElementById('wrapper'),
+                article = document.getElementsByTagName('article')[0],
+                menu = document.getElementById('menu');
+
+        menu.addEventListener &&
+        menu.addEventListener('click', function (e) {
+            if (!wrapper.className) {
+                wrapper.className = 'show-menu';
+            } else {
+                wrapper.className = '';
+            }
+        });
+
+        article.addEventListener &&
+        article.addEventListener('click', function (e) {
+            wrapper.className = '';
+        });
+    }());
+    </script>
+</div>
+</body>
+</html>
