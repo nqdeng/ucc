@@ -3,6 +3,8 @@
 
 The static file compiler for Unicorn System.
 
+[![Build Status](https://travis-ci.org/nqdeng/ucc.svg?branch=master)](https://travis-ci.org/nqdeng/ucc)
+
 ## Install
 
     npm install ucc -g
