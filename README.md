@@ -53,15 +53,15 @@ The static file compiler for Unicorn System.
 
 ### `compile(pathname, data)`
 
-    * pathname {String} 文件路径
-    * data {String | Buffer} 文件数据
+* pathname {String} 文件路径
+* data {String | Buffer} 文件数据
 
 根据提供的路径和内容编译文件，返回一个文件对象。
 
 ### `mount(extname, pipeline)`
 
-    * extname {String} 文件扩展名
-    * pipeline {Function | String} 文件处理方法
+* extname {String} 文件扩展名
+* pipeline {Function | String} 文件处理方法
 
 根据扩展名挂载不同的处理函数
 
