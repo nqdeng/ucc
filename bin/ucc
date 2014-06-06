@@ -13,9 +13,7 @@ function main(argv) {
 		prefix = (pkg.name || '') + '/' + (pkg.version || ''),
 		
 		compiler = ucc({
-			modular: {
-				alias: pkg.alias || {}
-			}
+			alias: pkg.alias || {}
 		}),
 	
 	source = new Source(source);
