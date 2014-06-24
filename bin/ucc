@@ -6,22 +6,18 @@ var path = require('path'),
 	Target = require('./target');
 
 function main(argv) {
-	var pkg = require(path.resolve('package.json')),
-		source = pkg.source || 'src',
-		target = pkg.target || 'build',
-		prefix = (pkg.name || '') + '/' + (pkg.version || ''),
-        alias = pkg.alias || {},
-        dependencies = pkg.dependencies || {};
+	var pkg = require(path.resolve('package.json'));
 
+		pkg.source = pkg.source || 'src';
+		pkg.target = pkg.target || 'build';
 
-    var compiler = ucc({
-			alias: alias,
-            dependencies: dependencies
-		}),
-	
-	source = new Source(source);
-	
-	target = new Target(target);
+        pkg.alias = pkg.alias || {};
+        pkg.dependencies = pkg.dependencies || {};
+
+    var prefix = (pkg.name || '') + '/' + (pkg.version || ''),
+        compiler = ucc(pkg),
+	    source = new Source(pkg.source);
+        target = new Target(pkg.target);
 
 	source.travel(function (pathname, data) {
 		var id = path.join(prefix, pathname).replace(/\\/g, '/');
