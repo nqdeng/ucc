@@ -16,7 +16,6 @@ function main(argv) {
 
     var compiler = ucc({
 			alias: alias,
-            prefix: prefix,
             dependencies: dependencies
 		}),
 	
