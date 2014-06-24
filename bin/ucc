@@ -9,11 +9,15 @@ function main(argv) {
 	var pkg = require(path.resolve('package.json')),
 		source = pkg.source || 'src',
 		target = pkg.target || 'build',
-		
 		prefix = (pkg.name || '') + '/' + (pkg.version || ''),
-		
-		compiler = ucc({
-			alias: pkg.alias || {}
+        alias = pkg.alias || {},
+        dependencies = pkg.dependencies || {};
+
+
+    var compiler = ucc({
+			alias: alias,
+            prefix: prefix,
+            dependencies: dependencies
 		}),
 	
 	source = new Source(source);
