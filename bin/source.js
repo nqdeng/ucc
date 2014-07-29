@@ -17,7 +17,7 @@ var Source = util.inherit(Object, {
 
 			if (stats.isFile()) {
 				callback(pathname, fs.readFileSync(node));
-			} else if (stats.isDirectory()) {
+			} else if (stats.isDirectory() && pathname.charAt(0) != '.'){
 				fs.readdirSync(node).forEach(function (filename) {
 					self.travel(callback, path.join(pathname, filename));
 				});
