@@ -13,14 +13,21 @@ var Source = util.inherit(Object, {
 			var root = this._root,
 				node = path.join(root, pathname),
 				stats = fs.statSync(node),
-				self = this;
+				self = this,
+				isHiddenDir = false;
 
 			if (stats.isFile()) {
 				callback(pathname, fs.readFileSync(node));
-			} else if (stats.isDirectory() && pathname.charAt(0) != '.'){
-				fs.readdirSync(node).forEach(function (filename) {
-					self.travel(callback, path.join(pathname, filename));
+			} else if (stats.isDirectory()){
+				isHiddenDir = pathname.split(pathname.sep).some(function(name){
+					return name.charAt(0) == '.';
 				});
+
+				if(!isHiddenDir){
+					fs.readdirSync(node).forEach(function (filename) {
+						self.travel(callback, path.join(pathname, filename));
+					});
+				}
 			}
 		}
 	});
