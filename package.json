@@ -9,7 +9,7 @@
     "url": "git://github.com/nqdeng/ucc.git"
   },
   "author": "Nanqiao Deng <nqdeng@gmail.com>",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "engines": {
     "node": "0.10.x"
   },
