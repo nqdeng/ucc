@@ -2,26 +2,19 @@
   "name": "ucc",
   "description": "Unicorn Compiler",
   "keywords": [
-    "unicorn","compiler"
+    "unicorn"
   ],
   "repository": {
     "type": "git",
     "url": "git://github.com/nqdeng/ucc.git"
   },
   "author": "Nanqiao Deng <nqdeng@gmail.com>",
-  "version": "3.0.7",
+  "version": "2.0.12",
   "engines": {
     "node": "0.10.x"
   },
-  "main": "lib/index.js",
+  "main": "lib/compiler.js",
   "bin": {
     "ucc": "./bin/ucc"
-  },
-  "devDependencies": {
-    "mocha": "~1.19.0",
-    "should": "~3.3.1"
-  },
-  "scripts": {
-    "test": "mocha"
   }
 }
